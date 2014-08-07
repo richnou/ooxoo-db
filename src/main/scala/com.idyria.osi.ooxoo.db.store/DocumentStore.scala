@@ -2,6 +2,7 @@ package com.idyria.osi.ooxoo.db.store
 
 import com.idyria.osi.ooxoo.db.Document
 import com.idyria.osi.ooxoo.core.buffers.structural.ElementBuffer
+import scala.reflect.ClassTag
 
 /**
  * Base Trait for Document Store
@@ -41,13 +42,13 @@ trait DocumentStore {
 
   }
 
-  def document[T <: ElementBuffer](path: String, topElement: T): Option[T] = {
+  def document[T <: ElementBuffer : ClassTag](path: String, topElement: T): Option[T] = {
 
     path.split("/") match {
 
       case splitted if (splitted.length != 2) => throw new RuntimeException(s"""DocumentStore document path $path not conform to containerid/documentid format """)
 
-      case splitted                           => this.container(splitted(0)).document(splitted(1), topElement)
+      case splitted                           => this.container(splitted(0)).document[T](splitted(1), topElement)
 
     }
 
