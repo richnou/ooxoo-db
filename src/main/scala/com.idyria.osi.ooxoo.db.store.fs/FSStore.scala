@@ -104,7 +104,9 @@ class FSContainer(
 
     this.baseFolder.listFiles() match {
       case null  => Nil
-      case files => files.filter(_.isFile()).map(f => this.getDocument(f.getName).get)
+      case files => 
+        
+        files.filter(_.isFile()).map(f => this.getDocument(f.getName).get)
     }
 
   }

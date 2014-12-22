@@ -166,9 +166,7 @@ trait DocumentContainer extends ListeningSupport {
     //---------------
     var res = List[T]()
 
-    // Prepare a top element
-    //---------
-    var top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
+    
 
     // Go through all documents an try to parse
     this.documents.foreach {
@@ -182,12 +180,14 @@ trait DocumentContainer extends ListeningSupport {
           case None =>
 
             try {
-
+              
+              //-- Prepare a top element
+              var top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
               this.document[T](doc.id, top)
 
               //-- OK
               res = res :+ top
-              top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
+              //top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
 
             } catch {
               // Error , don't retain this document
