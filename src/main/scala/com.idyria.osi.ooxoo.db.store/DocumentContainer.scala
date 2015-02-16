@@ -29,14 +29,14 @@ trait DocumentContainer extends ListeningSupport {
    * Lists all the documents available
    */
   def documents: Iterable[Document]
-  
+
   /**
    * Returns the list of all Documents that are mappable to the provided parameter type
    */
-  def documentsAs[T <: ElementBuffer: ClassTag] : Iterable[T] = {
-    
-    documents.map {  d =>  document[T](d.id) }.filterNot{_==None}.map(_.get)
-  
+  def documentsAs[T <: ElementBuffer: ClassTag]: Iterable[T] = {
+
+    documents.map { d => document[T](d.id) }.filterNot { _ == None }.map(_.get)
+
   }
 
   // Pure Document Interface
@@ -55,17 +55,25 @@ trait DocumentContainer extends ListeningSupport {
 
   def getCached[T <: ElementBuffer: ClassTag](id: String): Option[T] = {
 
+    //println(s"**DB** Looking for Cached document: ${this.id}/$id")
+
     //-- Look into cache
     this.parsedDocumentCache.get(id) match {
 
       //-- In Map, reference is not weak and types match
-      case Some(reference) if (reference.get() != null && Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").isAssignableFrom(reference.get().getClass)) =>
+      //case Some(reference) if (reference.get() != null && Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").isAssignableFrom(reference.get().getClass)) =>
+      case Some(reference) if (reference.get() != null) =>
 
         Option(reference.get().asInstanceOf[T])
 
       //-- In map and reference is weak, return none
       //-- NOthing, return none
-      case _ => None
+      case Some(reference) if (reference.get != null) =>
+       // println(s"**DB** Rebuilding ${this.id}/$id because class tag does not match : ${reference.get().getClass.getClassLoader.hashCode()} <-> ${classTag[T]}")
+        None
+      case _ =>
+      //  println(s"**DB** Rebuilding ${this.id}/$id because reference is gone")
+        None
 
     }
 
@@ -166,8 +174,6 @@ trait DocumentContainer extends ListeningSupport {
     //---------------
     var res = List[T]()
 
-    
-
     // Go through all documents an try to parse
     this.documents.foreach {
       doc =>
@@ -180,7 +186,7 @@ trait DocumentContainer extends ListeningSupport {
           case None =>
 
             try {
-              
+
               //-- Prepare a top element
               var top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
               this.document[T](doc.id, top)

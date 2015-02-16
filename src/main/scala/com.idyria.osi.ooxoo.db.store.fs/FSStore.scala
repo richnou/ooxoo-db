@@ -23,7 +23,7 @@ class FSStore(
 
   // Utils
   //------------
-  def cleanId(id: String): String = id.trim.replaceAll(s"""(/|${File.separator})""", ".")
+  def cleanId(id: String): String = id.trim.replace(s"""/""", ".").replace("\\", ".")
 
   // Containers
   //-----------------
