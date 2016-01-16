@@ -9,6 +9,7 @@ import com.idyria.osi.ooxoo.db.store.fs.FSDocument
 import java.io.File
 import com.idyria.osi.tea.listeners.ListeningSupport
 import scala.reflect._
+import com.idyria.osi.ooxoo.db.DocumentWrapper
 
 /**
  * A Document Container really contains documents and fetches/stores them
@@ -101,6 +102,7 @@ trait DocumentContainer extends ListeningSupport {
         //-- Get Document
         this.getDocument(path) match {
           case None => None
+          case Some(document) if !(document.exists) => None
           case Some(document) =>
 
             //-- Parse
@@ -141,6 +143,7 @@ trait DocumentContainer extends ListeningSupport {
         //-- Get Document
         this.getDocument(path) match {
           case None => None
+          case Some(document) if !(document.exists) => None
           case Some(document) =>
 
             // Create top Document
@@ -165,6 +168,21 @@ trait DocumentContainer extends ListeningSupport {
 
   }
 
+  /**
+   * Get an Interface To Document information with parsed node
+   */
+  def documentWrapper[T <: ElementBuffer: ClassTag](path: String, topElement: T) : Option[DocumentWrapper[T]] = {
+    
+    // Get/Create Document
+    var doc = this.getDocument(path).get 
+    
+    // Get//Create element
+    this.document(path,topElement)
+    
+    return Some(new DocumentWrapper(topElement,doc))
+    
+  }
+  
   /**
    * Gets all the Documents from current container, that match the given type
    */

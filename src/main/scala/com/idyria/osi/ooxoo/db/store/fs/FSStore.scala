@@ -129,10 +129,9 @@ class FSContainer(
     var documentFile = new File(baseFolder, filePath)
 
     //-- Exists ?
-    documentFile.exists() match {
-      case true  => Option(new FSDocument(documentFile))
-      case flase => None
-    }
+    var fsdoc = new FSDocument(documentFile)
+    fsdoc.container = this
+    Some(fsdoc)
 
   }
 
@@ -180,6 +179,8 @@ class FSDocument(
     var file: File) extends Document {
 
   var id = file.getName
+  
+  def exists = file.exists()
 
   def toInputStream = new FileInputStream(file)
 
