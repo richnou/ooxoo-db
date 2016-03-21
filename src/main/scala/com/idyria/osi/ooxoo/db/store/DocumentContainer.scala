@@ -10,6 +10,8 @@ import java.io.File
 import com.idyria.osi.tea.listeners.ListeningSupport
 import scala.reflect._
 import com.idyria.osi.ooxoo.db.DocumentWrapper
+import com.idyria.osi.ooxoo.core.buffers.structural.io.sax.STAXSyncTrait
+import com.idyria.osi.ooxoo.db.FileDocument
 
 /**
  * A Document Container really contains documents and fetches/stores them
@@ -70,10 +72,10 @@ trait DocumentContainer extends ListeningSupport {
       //-- In map and reference is weak, return none
       //-- NOthing, return none
       case Some(reference) if (reference.get != null) =>
-       // println(s"**DB** Rebuilding ${this.id}/$id because class tag does not match : ${reference.get().getClass.getClassLoader.hashCode()} <-> ${classTag[T]}")
+        // println(s"**DB** Rebuilding ${this.id}/$id because class tag does not match : ${reference.get().getClass.getClassLoader.hashCode()} <-> ${classTag[T]}")
         None
       case _ =>
-      //  println(s"**DB** Rebuilding ${this.id}/$id because reference is gone")
+        //  println(s"**DB** Rebuilding ${this.id}/$id because reference is gone")
         None
 
     }
@@ -106,9 +108,15 @@ trait DocumentContainer extends ListeningSupport {
           case Some(document) =>
 
             //-- Parse
-            var io = new StAXIOBuffer(document.toInputStream)
-            topElement.appendBuffer(io)
-            io.streamIn
+            //-- Connect STAX Sync
+
+            if (topElement.isInstanceOf[STAXSyncTrait] && document.isInstanceOf[FileDocument]) {
+              topElement.asInstanceOf[STAXSyncTrait].fromFile(document.asInstanceOf[FileDocument].file)
+            } else {
+              var io = new StAXIOBuffer(document.toInputStream)
+              topElement.appendBuffer(io)
+              io.streamIn
+            }
 
             //-- Cache
             this.parsedDocumentCache = this.parsedDocumentCache + (document.id -> new WeakReference(topElement))
@@ -171,18 +179,18 @@ trait DocumentContainer extends ListeningSupport {
   /**
    * Get an Interface To Document information with parsed node
    */
-  def documentWrapper[T <: ElementBuffer: ClassTag](path: String, topElement: T) : Option[DocumentWrapper[T]] = {
-    
+  def documentWrapper[T <: ElementBuffer: ClassTag](path: String, topElement: T): Option[DocumentWrapper[T]] = {
+
     // Get/Create Document
-    var doc = this.getDocument(path).get 
-    
+    var doc = this.getDocument(path).get
+
     // Get//Create element
-    this.document(path,topElement)
-    
-    return Some(new DocumentWrapper(topElement,doc))
-    
+    this.document(path, topElement)
+
+    return Some(new DocumentWrapper(topElement, doc))
+
   }
-  
+
   /**
    * Gets all the Documents from current container, that match the given type
    */

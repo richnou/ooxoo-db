@@ -10,6 +10,7 @@ import com.idyria.osi.ooxoo.core.buffers.structural.io.sax.StAXIOBuffer
 import java.io.FileOutputStream
 import scala.reflect.ClassTag
 import com.idyria.osi.ooxoo.core.buffers.structural.ElementBuffer
+import com.idyria.osi.ooxoo.db.FileDocument
 
 /**
  * FSSStore is a simple filesystem store implementation
@@ -176,7 +177,7 @@ class FSDocument(
     /**
      * The File holding document data
      */
-    var file: File) extends Document {
+    val file: File) extends FileDocument {
 
   var id = file.getName
   
