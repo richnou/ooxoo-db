@@ -88,7 +88,7 @@ trait DocumentContainer extends ListeningSupport {
    * FIXME: Add some more type testing with cache to avoid two document() calls with different type causing classCastException
    * @return None or and Option containing the provided topElement
    */
-  def document[T <: ElementBuffer: ClassTag](path: String, topElement: T): Option[T] = {
+  def document[T <: ElementBuffer: ClassTag](path: String, topElement: T,autocreate :Boolean= false): Option[T] = {
 
     //-- Look into cache
     this.getCached[T](path) match {
@@ -104,8 +104,19 @@ trait DocumentContainer extends ListeningSupport {
         //-- Get Document
         this.getDocument(path) match {
           case None => None
-          case Some(document) if !(document.exists) => None
-          case Some(document) =>
+          
+          // No Document, create if necessary
+          case Some(document) if (document.exists==false && autocreate) =>
+            var doc = this.writeDocument(path, topElement)
+            
+            if (topElement.isInstanceOf[STAXSyncTrait] && doc.isInstanceOf[FileDocument]) {
+              topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
+            }
+            
+            Some(topElement)
+
+          
+          case Some(document) if(document.exists) =>
 
             //-- Parse
             //-- Connect STAX Sync
@@ -113,6 +124,7 @@ trait DocumentContainer extends ListeningSupport {
             if (topElement.isInstanceOf[STAXSyncTrait] && document.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(document.asInstanceOf[FileDocument].file)
             } else {
+              
               var io = new StAXIOBuffer(document.toInputStream)
               topElement.appendBuffer(io)
               io.streamIn
@@ -122,7 +134,9 @@ trait DocumentContainer extends ListeningSupport {
             this.parsedDocumentCache = this.parsedDocumentCache + (document.id -> new WeakReference(topElement))
 
             //-- Return
-            Option(topElement)
+            Some(topElement)
+            
+          case _ => None
         }
 
     }
@@ -213,6 +227,7 @@ trait DocumentContainer extends ListeningSupport {
 
             try {
 
+              println(s"Getting document ${doc.id}")
               //-- Prepare a top element
               var top = Thread.currentThread.getContextClassLoader().loadClass(s"${classTag[T]}").newInstance.asInstanceOf[T]
               this.document[T](doc.id, top)
@@ -239,6 +254,6 @@ trait DocumentContainer extends ListeningSupport {
    *
    * document.writen((path,topElement))
    */
-  def writeDocument[T <: ElementBuffer: ClassTag](path: String, topElement: T): Unit
+  def writeDocument[T <: ElementBuffer: ClassTag](path: String, topElement: T): Document
 
 }

@@ -128,7 +128,7 @@ class FSContainer(
 
     //-- Create File
     var documentFile = new File(baseFolder, filePath)
-
+    println(s"Got document: ${documentFile.toURI.toURL()}")
     //-- Exists ?
     var fsdoc = new FSDocument(documentFile)
     fsdoc.container = this
@@ -139,7 +139,7 @@ class FSContainer(
   /**
    *
    */
-  def writeDocument[T <: ElementBuffer: ClassTag](path: String, topElement: T): Unit = {
+  def writeDocument[T <: ElementBuffer: ClassTag](path: String, topElement: T): Document = {
 
     //-- Append xml to path
     var filePath = path match {
@@ -167,6 +167,8 @@ class FSContainer(
     //-- Listeners call
     this.@->("document.writen", (path, topElement))
     this.@->("document.writen")
+    
+    document
 
   }
 
