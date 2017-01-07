@@ -5,9 +5,9 @@
     <packaging>jar</packaging>
     <name>OOXOO Db Project</name>
     <parent>
-        <groupId>com.idyria.osi.ooxoo</groupId>
+        <groupId>org.odfi.ooxoo</groupId>
         <artifactId>ooxoo-all</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.0</version>
     </parent>
 
     <!-- Site Distribution -->
@@ -19,66 +19,66 @@
         </site>
     </distributionManagement>
 
-    <!-- Repositories to find Native4J and OSI packages -->
-    <!-- ############################################## -->
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype</id>
-            <name>Sonatype OSS Snapshots Repository</name>
-            <url>http://oss.sonatype.org/content/groups/public</url>
-        </pluginRepository>
-        <!-- For old snapshots, please use groupId `com.jnaerator` and the
-            following repo -->
-        <pluginRepository>
-            <id>nativelibs4java-repo</id>
-            <url>http://nativelibs4java.sourceforge.net/maven</url>
-        </pluginRepository>
-        <pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>idyria.central</id>
-            <name>plugins-release</name>
-            <url>http://www.idyria.com/access/osi/artifactory/libs-release</url>
-        </pluginRepository>
-        <pluginRepository>
-            <snapshots>
+    <!-- Repositories to find OSI packages -->
+	<!-- ############################################## -->
+	<pluginRepositories>
+		<pluginRepository>
+			<id>sonatype</id>
+			<name>Sonatype OSS Snapshots Repository</name>
+			<url>http://oss.sonatype.org/content/groups/public</url>
+		</pluginRepository>
+		<!-- For old snapshots, please use groupId `com.jnaerator` and the following 
+			repo -->
+		<pluginRepository>
+			<id>nativelibs4java-repo</id>
+			<url>http://nativelibs4java.sourceforge.net/maven</url>
+		</pluginRepository>
+		<pluginRepository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>odfi.central</id>
+			<name>plugins-release</name>
+			<url>https://www.opendesignflow.org/maven/repository/internal/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<id>odfi.snapshots</id>
+			<name>plugins-snapshot</name>
+			<url>https://www.opendesignflow.org/maven/repository/snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
+	<repositories>
+		<repository>
+			<id>sonatype</id>
+			<name>Sonatype OSS Snapshots Repository</name>
+			<url>http://oss.sonatype.org/content/groups/public</url>
+		</repository>
+		<!-- For old snapshots, please use groupId `com.jnaerator` and the following 
+			repo -->
+		<repository>
+			<id>nativelibs4java-repo</id>
+			<url>http://nativelibs4java.sourceforge.net/maven</url>
+		</repository>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>odfi.central</id>
+			<name>odfi-release</name>
+			<url>https://www.opendesignflow.org/maven/repository/internal/</url>
+		</repository>
+		<repository>
+			<snapshots>
                 <enabled>true</enabled>
             </snapshots>
-            <id>idyria.snapshots</id>
-            <name>plugins-snapshot</name>
-            <url>http://www.idyria.com/access/osi/artifactory/libs-snapshot</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype OSS Snapshots Repository</name>
-            <url>http://oss.sonatype.org/content/groups/public</url>
-        </repository>
-        <!-- For old snapshots, please use groupId `com.jnaerator` and the
-            following repo -->
-        <repository>
-            <id>nativelibs4java-repo</id>
-            <url>http://nativelibs4java.sourceforge.net/maven</url>
-        </repository>
-        <repository>
-            <snapshots>
-                    <enabled>false</enabled>
-            </snapshots>
-            <id>idyria.central</id>
-            <name>libs-release</name>
-            <url>http://www.idyria.com/access/osi/artifactory/libs-release</url>
-        </repository>
-        <repository>
-                <snapshots>
-                        <enabled>true</enabled>
-                </snapshots>
-                <id>idyria.snapshots</id>
-                <name>libs-snapshot</name>
-                <url>http://www.idyria.com/access/osi/artifactory/libs-snapshot</url>
-        </repository>
-    </repositories>
+			<id>odfi.snapshots</id>
+			<name>odfi-snapshot</name>
+			<url>https://www.opendesignflow.org/maven/repository/snapshots/</url>
+		</repository>
+	</repositories>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
