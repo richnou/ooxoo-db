@@ -189,6 +189,63 @@ trait DocumentContainer extends ListeningSupport {
     }
 
   }
+  
+  def documentWithNew[T <: ElementBuffer: ClassTag](path: String, topElement: T)(cl: T => Unit): T = {
+
+    //-- Look into cache
+    this.getCached[T](path) match {
+
+      //-- In Map and reference is not weak, return
+      case Some(res) => res
+
+      //-- In map, but reference is weak
+      //-- Or None
+      //-- Try to parse
+      case None =>
+
+        //-- Get Document
+        this.getDocument(path) match {
+
+          //-- Document exists, otherwise create
+          case Some(document) if(document.exists) =>
+
+            //-- Parse
+            //-- Connect STAX Sync
+
+            if (topElement.isInstanceOf[STAXSyncTrait] && document.isInstanceOf[FileDocument]) {
+              topElement.asInstanceOf[STAXSyncTrait].fromFile(document.asInstanceOf[FileDocument].file)
+            } else {
+              
+              var io = new StAXIOBuffer(document.toInputStream)
+              topElement.appendBuffer(io)
+              io.streamIn
+            }
+
+
+            //-- Cache
+            this.parsedDocumentCache = this.parsedDocumentCache + (document.id -> new WeakReference(topElement))
+
+            //-- Return
+            topElement
+            
+          case _ =>
+            
+            println(s"****** Create NEW ODCUMENT $path ******")
+            //-- Call new closure, then save
+            cl(topElement)
+            var doc = this.writeDocument(path, topElement)
+            
+            if (topElement.isInstanceOf[STAXSyncTrait] && doc.isInstanceOf[FileDocument]) {
+              topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
+            }
+            
+            
+            topElement
+        }
+
+    }
+
+  }
 
   /**
    * Get an Interface To Document information with parsed node
