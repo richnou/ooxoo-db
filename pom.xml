@@ -4,10 +4,11 @@
     <artifactId>ooxoo-db</artifactId>
     <packaging>jar</packaging>
     <name>OOXOO Db Project</name>
+    <version>3.2.1</version>
     <parent>
         <groupId>org.odfi.ooxoo</groupId>
         <artifactId>ooxoo-all</artifactId>
-        <version>3.2.1</version>
+	<version>${project.version}</version>
     </parent>
 
     <!-- Site Distribution -->
