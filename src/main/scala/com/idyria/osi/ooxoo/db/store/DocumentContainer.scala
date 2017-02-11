@@ -12,6 +12,7 @@ import scala.reflect._
 import com.idyria.osi.ooxoo.db.DocumentWrapper
 import com.idyria.osi.ooxoo.core.buffers.structural.io.sax.STAXSyncTrait
 import com.idyria.osi.ooxoo.db.FileDocument
+import com.idyria.osi.ooxoo.db.traits.DBContainerReference
 
 /**
  * A Document Container really contains documents and fetches/stores them
@@ -56,6 +57,10 @@ trait DocumentContainer extends ListeningSupport {
    */
   def getDocument(path: String): Option[Document]
 
+  def clearCached(id:String) = {
+   this.parsedDocumentCache =  this.parsedDocumentCache - id
+  }
+   
   def getCached[T <: ElementBuffer: ClassTag](id: String): Option[T] = {
 
     //println(s"**DB** Looking for Cached document: ${this.id}/$id")
@@ -113,6 +118,12 @@ trait DocumentContainer extends ListeningSupport {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
             }
             
+            topElement match {
+              case e : DBContainerReference =>
+                e.parentContainer = Some(this)
+              case _ => 
+            }
+            
             Some(topElement)
 
           
@@ -128,6 +139,12 @@ trait DocumentContainer extends ListeningSupport {
               var io = new StAXIOBuffer(document.toInputStream)
               topElement.appendBuffer(io)
               io.streamIn
+            }
+            
+            topElement match {
+              case e : DBContainerReference =>
+                e.parentContainer = Some(this)
+              case _ => 
             }
 
             //-- Cache
@@ -220,6 +237,12 @@ trait DocumentContainer extends ListeningSupport {
               topElement.appendBuffer(io)
               io.streamIn
             }
+            
+            topElement match {
+              case e : DBContainerReference =>
+                e.parentContainer = Some(this)
+              case _ => 
+            }
 
 
             //-- Cache
@@ -230,13 +253,19 @@ trait DocumentContainer extends ListeningSupport {
             
           case _ =>
             
-            println(s"****** Create NEW ODCUMENT $path ******")
+            //println(s"****** Create NEW ODCUMENT $path ******")
             //-- Call new closure, then save
             cl(topElement)
             var doc = this.writeDocument(path, topElement)
             
             if (topElement.isInstanceOf[STAXSyncTrait] && doc.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
+            }
+            
+            topElement match {
+              case e : DBContainerReference =>
+                e.parentContainer = Some(this)
+              case _ => 
             }
             
             
