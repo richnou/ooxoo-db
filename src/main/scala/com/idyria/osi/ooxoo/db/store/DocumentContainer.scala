@@ -39,7 +39,7 @@ trait DocumentContainer extends ListeningSupport {
    */
   def documentsAs[T <: ElementBuffer: ClassTag]: Iterable[T] = {
 
-    documents.map { d => document[T](d.id) }.filterNot { _ == None }.map(_.get)
+    documents.map { d => documentFromClass[T](d.id) }.filterNot { _ == None }.map(_.get)
 
   }
 
@@ -57,10 +57,10 @@ trait DocumentContainer extends ListeningSupport {
    */
   def getDocument(path: String): Option[Document]
 
-  def clearCached(id:String) = {
-   this.parsedDocumentCache =  this.parsedDocumentCache - id
+  def clearCached(id: String) = {
+    this.parsedDocumentCache = this.parsedDocumentCache - id
   }
-   
+
   def getCached[T <: ElementBuffer: ClassTag](id: String): Option[T] = {
 
     //println(s"**DB** Looking for Cached document: ${this.id}/$id")
@@ -93,7 +93,7 @@ trait DocumentContainer extends ListeningSupport {
    * FIXME: Add some more type testing with cache to avoid two document() calls with different type causing classCastException
    * @return None or and Option containing the provided topElement
    */
-  def document[T <: ElementBuffer: ClassTag](path: String, topElement: T,autocreate :Boolean= false): Option[T] = {
+  def document[T <: ElementBuffer: ClassTag](path: String, topElement: T, autocreate: Boolean = false): Option[T] = {
 
     //-- Look into cache
     this.getCached[T](path) match {
@@ -109,25 +109,24 @@ trait DocumentContainer extends ListeningSupport {
         //-- Get Document
         this.getDocument(path) match {
           case None => None
-          
+
           // No Document, create if necessary
-          case Some(document) if (document.exists==false && autocreate) =>
+          case Some(document) if (document.exists == false && autocreate) =>
             var doc = this.writeDocument(path, topElement)
-            
+
             if (topElement.isInstanceOf[STAXSyncTrait] && doc.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
             }
-            
+
             topElement match {
-              case e : DBContainerReference =>
+              case e: DBContainerReference =>
                 e.parentContainer = Some(this)
-              case _ => 
+              case _ =>
             }
-            
+
             Some(topElement)
 
-          
-          case Some(document) if(document.exists) =>
+          case Some(document) if (document.exists) =>
 
             //-- Parse
             //-- Connect STAX Sync
@@ -135,16 +134,16 @@ trait DocumentContainer extends ListeningSupport {
             if (topElement.isInstanceOf[STAXSyncTrait] && document.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(document.asInstanceOf[FileDocument].file)
             } else {
-              
+
               var io = new StAXIOBuffer(document.toInputStream)
               topElement.appendBuffer(io)
               io.streamIn
             }
-            
+
             topElement match {
-              case e : DBContainerReference =>
+              case e: DBContainerReference =>
                 e.parentContainer = Some(this)
-              case _ => 
+              case _ =>
             }
 
             //-- Cache
@@ -152,7 +151,7 @@ trait DocumentContainer extends ListeningSupport {
 
             //-- Return
             Some(topElement)
-            
+
           case _ => None
         }
 
@@ -166,7 +165,7 @@ trait DocumentContainer extends ListeningSupport {
    * FIXME: Add some more type testing with cache to avoid two document() calls with different type causing classCastException
    * @return None or and Option containing the provided topElement
    */
-  def document[T <: ElementBuffer: ClassTag](path: String): Option[T] = {
+  def documentFromClass[T <: ElementBuffer: ClassTag](path: String, autocreate: Boolean = false): Option[T] = {
 
     //-- Look into cache
     this.getCached[T](path) match {
@@ -181,7 +180,9 @@ trait DocumentContainer extends ListeningSupport {
 
         //-- Get Document
         this.getDocument(path) match {
+          case None if (autocreate) => document(path, classTag[T].runtimeClass.newInstance().asInstanceOf[T], true)
           case None => None
+
           case Some(document) if !(document.exists) => None
           case Some(document) =>
 
@@ -206,7 +207,7 @@ trait DocumentContainer extends ListeningSupport {
     }
 
   }
-  
+
   def documentWithNew[T <: ElementBuffer: ClassTag](path: String, topElement: T)(cl: T => Unit): T = {
 
     //-- Look into cache
@@ -224,7 +225,7 @@ trait DocumentContainer extends ListeningSupport {
         this.getDocument(path) match {
 
           //-- Document exists, otherwise create
-          case Some(document) if(document.exists) =>
+          case Some(document) if (document.exists) =>
 
             //-- Parse
             //-- Connect STAX Sync
@@ -232,43 +233,41 @@ trait DocumentContainer extends ListeningSupport {
             if (topElement.isInstanceOf[STAXSyncTrait] && document.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(document.asInstanceOf[FileDocument].file)
             } else {
-              
+
               var io = new StAXIOBuffer(document.toInputStream)
               topElement.appendBuffer(io)
               io.streamIn
             }
-            
-            topElement match {
-              case e : DBContainerReference =>
-                e.parentContainer = Some(this)
-              case _ => 
-            }
 
+            topElement match {
+              case e: DBContainerReference =>
+                e.parentContainer = Some(this)
+              case _ =>
+            }
 
             //-- Cache
             this.parsedDocumentCache = this.parsedDocumentCache + (document.id -> new WeakReference(topElement))
 
             //-- Return
             topElement
-            
+
           case _ =>
-            
+
             //println(s"****** Create NEW ODCUMENT $path ******")
             //-- Call new closure, then save
             cl(topElement)
             var doc = this.writeDocument(path, topElement)
-            
+
             if (topElement.isInstanceOf[STAXSyncTrait] && doc.isInstanceOf[FileDocument]) {
               topElement.asInstanceOf[STAXSyncTrait].fromFile(doc.asInstanceOf[FileDocument].file)
             }
-            
+
             topElement match {
-              case e : DBContainerReference =>
+              case e: DBContainerReference =>
                 e.parentContainer = Some(this)
-              case _ => 
+              case _ =>
             }
-            
-            
+
             topElement
         }
 

@@ -36,7 +36,7 @@ trait DocumentStore {
 
       case splitted if (splitted.length != 2) => throw new RuntimeException(s"""DocumentStore document path $path not conform to containerid/documentid format """)
 
-      case splitted                           => this.container(splitted(0)).document(splitted(1))
+      case splitted                           => this.container(splitted(0)).getDocument(splitted(1))
 
     }
 
